@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>House Price Prediction</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0%;
+            padding: 5%;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            width: 100%;
+            top: 0%;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin-top: 20px, auto;
+            padding: 30px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            width: 100%;
+            bottom: 0%;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #predictedPrice {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>House Price Prediction</h1>
+    </header>
+    <main>
+        <p>Welcome to House Price Prediction Model!</p>
+        <form id="predictionForm" onsubmit="resetForm()">
+            <label for="beds">Bedrooms</label>
+            <select name="beds" id="beds">
+                <option value="" disabled selected>Select number of bedrooms</option>
+                {% for bedroom in bedrooms %} <option value="{{ bedroom }}">{{ bedroom }}</option> {% endfor %}
+            </select>
+            <label for="bath">Bathrooms</label>
+            <select name="bath" id="bath">
+                <option value="" disabled selected>Select number of bathrooms</option>
+                {% for bathroom in bathrooms %} <option value="{{ bathroom }}">{{ bathroom }}</option> {% endfor %}
+            </select>
+            <label for="sizes">Size</label>
+            <select name="sizes" id="sizes">
+                <option value="" disabled selected>Select the size of the room</option>
+                {% for size in sizes %} <option value="{{ size }}">{{ size }} Sqrt</option> {% endfor %}
+            </select>
+            <label for="zip_code">Zip Code</label>
+            <select name="zip_code" id="zip_code">
+                <option value="" disabled selected>Select the zip code</option>
+                {% for zip_code in zip_codes %} <option value="{{ zip_code }}">{{ zip_code }}</option> {% endfor %}
+            </select>
+            <button type="button" onclick="sendData(); resetForm()">Predict Price</button>
+            <div id="predictedPrice"></div>
+        </form>
+    </main>
+    <footer>
+        <p>© 2024 House Price Prediction</p>
+    </footer>
+    <script>
+        function fetchOptions(endpoint, dropdownId) {
+            fetch(endpoint)
+                .then((response) => response.json())
+                .then((data) => {
+                    const dropdown = document.getElementById(dropdownId);
+                    dropdown.innerHTML =
+                        '<option value="" disabled selected>Select an options</option>';
+                    data.forEach((option) => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option;
+                        dropdown.appendChild(optionElement);
+                    });
+                });
+        }
+        window.onload = function () {
+            fetchOptions('/bedrooms?refresh=true', 'beds');
+            fetchOptions('/bathrooms?refresh=true', 'baths');
+            fetchOptions('/sizes?refresh=true', 'sizes');
+            fetchOptions('/zip_codes?refresh=true', 'zip_code');
+        };
+
+        function sendData() {
+            const form = document.getElementById('predictionForm');
+            const formData = new FormData(form);
+            fetch('/predict', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then((response) => response.text())
+                .then((price) => {
+                    document.getElementById('predictedPrice').innerHTML =
+                        'Price: INR ' + price;
+                });
+        }
+    </script>
+    <script>
+        function resetForm() {
+            document.getElementById('predictionForm').reset();
+        }
+    </script>
+</body>
+
+</html>
